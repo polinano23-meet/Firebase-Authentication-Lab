@@ -6,15 +6,15 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = 'super-secret-key'
 
 config = {
-  "apiKey": "AIzaSyBmklFjoEhTj0lflN4adVPTEoqn0rGzNiA",
-  "authDomain": "lab-project-c97d8.firebaseapp.com",
-  "projectId": "lab-project-c97d8",
-  "storageBucket": "lab-project-c97d8.appspot.com",
-  "messagingSenderId": "963828519606",
-  "appId": "1:963828519606:web:88a90689dc19876e7a0c17",
-  "measurementId": "G-1YSQ8FSTWK",
-  "databaseURL": "https://lab-project-c97d8-default-rtdb.asia-southeast1.firebasedatabase.app/"
-}
+  "apiKey": "AIzaSyCQ7kDtpsnUPViaMcPieLlmuNvCzHFaB0g",
+  "authDomain": "final-mini-project-6f22d.firebaseapp.com",
+  "projectId": "final-mini-project-6f22d",
+  "storageBucket": "final-mini-project-6f22d.appspot.com",
+  "messagingSenderId": "1075887500553",
+  "appId": "1:1075887500553:web:1d690a5bfb440cdb97b7d8",
+  "measurementId": "G-RV6ZP2YGBL" ,
+  "databaseURL":"https://final-mini-project-6f22d-default-rtdb.europe-west1.firebasedatabase.app/"
+  }
 
 
 
@@ -30,7 +30,7 @@ def signin():
        password = request.form['password']
        try:
         login_session['user'] = auth.sign_in_with_email_and_password(email, password)
-        return redirect(url_for('add_tweet'))
+        return redirect(url_for('home'))
        except:
            error = "Authentication failed"
     return render_template("signin.html")
@@ -45,9 +45,9 @@ def signup():
        password = request.form['password']
        try:
         login_session['user'] = auth.create_user_with_email_and_password(email, password)
-        user={"email":request.form['email'], "password":request.form['password'], "full_name": request.form['full_name'], "username": request.form['username'], "bio": request.form['bio']}
+        user={"email":request.form['email'], "password":request.form['password'], "full_name": request.form['full_name'], "username": request.form['username']}
         db.child("User").child(login_session['user']['localId']).set(user)
-        return redirect(url_for('add_tweet'))
+        return redirect(url_for('home'))
        except:
            error = "Authentication failed"
    return render_template("signup.html")
@@ -59,14 +59,24 @@ def add_tweet():
     if request.method == 'POST':
         tweet={"text":request.form['text'], "title":request.form['title'] , "uid":login_session['user']['localId']}
         db.child("tweet").push(tweet)
+        return redirect('/all_tweets')
     return render_template("add_tweet.html")
 
 
-@app.rout('/all_tweets')
+@app.route('/all_tweets', methods=['GET','POST'])
 def all_tweets():
+    if request.method == 'GET':
+        tweet_dict=db.child("tweet").get().val()
+    return render_template("tweets.html" , tweet_dict = tweet_dict)
+
+@app.route('/home', methods=['GET','POST'])
+def home():
     if request.method == 'POST':
-        print(db.child(tweets).child(login_session)['user']['localId']).get().val()
-    return render_template("all_tweet.html")
+        tweet={"text":request.form['text'], "title":request.form['title']}
+        db.child("tweet").push(tweet)
+        return redirect('/all_tweets')
+    return render_template("home.html")
+
 
 if __name__ == '__main__':
     app.run(debug=True)
